@@ -621,35 +621,6 @@
 		]]
 	end
 
-
---
--- Xbox 360 doesn't list a subsystem or entry point.
---
-
-	function suite.onXbox360()
-		kind "ConsoleApp"
-		system "Xbox360"
-		prepare()
-		test.capture [[
-		]]
-	end
-
---
--- Xbox 360 uses .lib for library extensions
---
-	function suite.libAdded_onXbox360SystemLibs()
-		kind "ConsoleApp"
-		system "Xbox360"
-		links { "user32" }
-		prepare()
-		test.capture [[
-<Link>
-	<AdditionalDependencies>user32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-</Link>
-		]]
-	end
-
-
 --
 -- Check handling of warning flags.
 --
@@ -716,7 +687,7 @@
 -- Test ignoring default libraries without extensions specified.
 --
 
-	function suite.ignoreDefaultLibraries_WithExtensions()
+	function suite.ignoreDefaultLibraries_WithoutExtensions()
 		ignoredefaultlibraries { "lib1", "lib2.obj" }
 		prepare()
 		test.capture [[

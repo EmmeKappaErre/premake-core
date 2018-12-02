@@ -126,7 +126,33 @@
 	end
 
 
+	function suite.PBXFileReference_ListsIOSWindowedTarget()
+		_TARGET_OS = "ios"
+		kind "WindowedApp"
+		prepare()
+		xcode.PBXFileReference(tr)
+		test.capture [[
+/* Begin PBXFileReference section */
+		[MyProject.app:product] /* MyProject.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = MyProject.app; path = MyProject.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+		]]
+	end
+
+
 	function suite.PBXFileReference_ListsStaticLibTarget()
+		kind "StaticLib"
+		prepare()
+		xcode.PBXFileReference(tr)
+		test.capture [[
+/* Begin PBXFileReference section */
+		[libMyProject.a:product] /* libMyProject.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; name = libMyProject.a; path = libMyProject.a; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+		]]
+	end
+
+
+	function suite.PBXFileReference_ListsIOSStaticLibTarget()
+		_TARGET_OS = "ios"
 		kind "StaticLib"
 		prepare()
 		xcode.PBXFileReference(tr)
@@ -150,6 +176,74 @@
 	end
 
 
+	function suite.PBXFileReference_ListsIOSSharedLibTarget()
+		_TARGET_OS = "ios"
+		kind "SharedLib"
+		prepare()
+		xcode.PBXFileReference(tr)
+		test.capture [[
+/* Begin PBXFileReference section */
+		[libMyProject.dylib:product] /* libMyProject.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; name = libMyProject.dylib; path = libMyProject.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+		]]
+	end
+
+
+	function suite.PBXFileReference_ListsOSXBundleTarget()
+		kind "SharedLib"
+		sharedlibtype "OSXBundle"
+		prepare()
+		xcode.PBXFileReference(tr)
+		test.capture [[
+/* Begin PBXFileReference section */
+		[MyProject.bundle:product] /* MyProject.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = MyProject.bundle; path = MyProject.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+		]]
+	end
+
+
+	function suite.PBXFileReference_ListsIOSOSXBundleTarget()
+		_TARGET_OS = "ios"
+		kind "SharedLib"
+		sharedlibtype "OSXBundle"
+		prepare()
+		xcode.PBXFileReference(tr)
+		test.capture [[
+/* Begin PBXFileReference section */
+		[MyProject.bundle:product] /* MyProject.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = MyProject.bundle; path = MyProject.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+		]]
+	end
+
+
+	function suite.PBXFileReference_ListsOSXFrameworkTarget()
+		kind "SharedLib"
+		sharedlibtype "OSXFramework"
+		prepare()
+		xcode.PBXFileReference(tr)
+		test.capture [[
+/* Begin PBXFileReference section */
+		[MyProject.framework:product] /* MyProject.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = MyProject.framework; path = MyProject.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+		]]
+	end
+
+
+	function suite.PBXFileReference_ListsIOSOSXFrameworkTarget()
+		_TARGET_OS = "ios"
+		kind "SharedLib"
+		sharedlibtype "OSXFramework"
+		prepare()
+		xcode.PBXFileReference(tr)
+		test.capture [[
+/* Begin PBXFileReference section */
+		[MyProject.framework:product] /* MyProject.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; name = MyProject.framework; path = MyProject.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+		]]
+	end
+
+
+
 	function suite.PBXFileReference_ListsSourceFiles()
 		files { "source.c" }
 		prepare()
@@ -158,6 +252,19 @@
 /* Begin PBXFileReference section */
 		[MyProject:product] /* MyProject */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = MyProject; path = MyProject; sourceTree = BUILT_PRODUCTS_DIR; };
 		[source.c] /* source.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = source.c; path = source.c; sourceTree = "<group>"; };
+		]]
+	end
+
+	function suite.PBXFileReference_ListsSourceFilesCompileAs()
+		files { "source.c" }
+		filter { "files:source.c" }
+			compileas "C++"
+		prepare()
+		xcode.PBXFileReference(tr)
+		test.capture [[
+/* Begin PBXFileReference section */
+		[MyProject:product] /* MyProject */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = MyProject; path = MyProject; sourceTree = BUILT_PRODUCTS_DIR; };
+		[source.c] /* source.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; name = source.c; path = source.c; sourceTree = "<group>"; };
 		]]
 	end
 
@@ -617,6 +724,10 @@
 		prebuildcommands { "prebuildcmd" }
 		prelinkcommands { "prelinkcmd" }
 		postbuildcommands { "postbuildcmd" }
+		files { "file.in" }
+		filter { "files:file.in" }
+			buildcommands { "buildcmd" }
+			buildoutputs { "file.out" }
 		prepare()
 		xcode.PBXNativeTarget(tr)
 		test.capture [[
@@ -626,6 +737,7 @@
 			buildConfigurationList = [MyProject:cfg] /* Build configuration list for PBXNativeTarget "MyProject" */;
 			buildPhases = (
 				9607AE1010C857E500CD1376 /* Prebuild */,
+				[file.in:buildcommand] /* Build "file.in" */,
 				[MyProject:rez] /* Resources */,
 				[MyProject:src] /* Sources */,
 				9607AE3510C85E7E00CD1376 /* Prelink */,
@@ -647,6 +759,151 @@
 	end
 
 
+	function suite.PBXNativeTarget_OnBuildCommandsFilesFilterDependency()
+		files { "file.1", "file.2", "file.3" }
+		filter { "files:file.1" }
+			buildcommands { "first" }
+			buildoutputs { "file.2" }
+		filter { "files:file.3" }
+			buildcommands { "last" }
+			buildoutputs { "file.4" }
+		filter { "files:file.2" }
+			buildcommands { "second" }
+			buildoutputs { "file.3" }
+		prepare()
+		xcode.PBXNativeTarget(tr)
+		test.capture [[
+/* Begin PBXNativeTarget section */
+		[MyProject:target] /* MyProject */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = [MyProject:cfg] /* Build configuration list for PBXNativeTarget "MyProject" */;
+			buildPhases = (
+				[file.1:buildcommand] /* Build "file.1" */,
+				[file.2:buildcommand] /* Build "file.2" */,
+				[file.3:buildcommand] /* Build "file.3" */,
+				[MyProject:rez] /* Resources */,
+				[MyProject:src] /* Sources */,
+				[MyProject:fxs] /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MyProject;
+			productInstallPath = "$(HOME)/bin";
+			productName = MyProject;
+			productReference = [MyProject:product] /* MyProject */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+		]]
+	end
+
+
+	function suite.PBXNativeTarget_OnBuildCommandsBuildInputsDependency()
+		files { "file.1", "file.2", "file.3" }
+		filter { "files:file.1" }
+			buildcommands { "first" }
+			buildoutputs { "file.4" }
+		filter { "files:file.3" }
+			buildcommands { "last" }
+			buildinputs { "file.5" }
+			buildoutputs { "file.6" }
+		filter { "files:file.2" }
+			buildcommands { "second" }
+			buildinputs { "file.4" }
+			buildoutputs { "file.5" }
+		prepare()
+		xcode.PBXNativeTarget(tr)
+		test.capture [[
+/* Begin PBXNativeTarget section */
+		[MyProject:target] /* MyProject */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = [MyProject:cfg] /* Build configuration list for PBXNativeTarget "MyProject" */;
+			buildPhases = (
+				[file.1:buildcommand] /* Build "file.1" */,
+				[file.2:buildcommand] /* Build "file.2" */,
+				[file.3:buildcommand] /* Build "file.3" */,
+				[MyProject:rez] /* Resources */,
+				[MyProject:src] /* Sources */,
+				[MyProject:fxs] /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MyProject;
+			productInstallPath = "$(HOME)/bin";
+			productName = MyProject;
+			productReference = [MyProject:product] /* MyProject */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+		]]
+	end
+
+
+---------------------------------------------------------------------------
+-- PBXAggregateTarget tests
+---------------------------------------------------------------------------
+
+	function suite.PBXAggregateTarget_OnUtility()
+		kind "Utility"
+		prepare()
+		xcode.PBXAggregateTarget(tr)
+		test.capture [[
+/* Begin PBXAggregateTarget section */
+		[MyProject:target] /* MyProject */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = [MyProject:cfg] /* Build configuration list for PBXAggregateTarget "MyProject" */;
+			buildPhases = (
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MyProject;
+			productName = MyProject;
+		};
+/* End PBXAggregateTarget section */
+		]]
+	end
+
+
+	function suite.PBXAggregateTarget_OnBuildCommands()
+		kind "Utility"
+		prebuildcommands { "prebuildcmd" }
+		prelinkcommands { "prelinkcmd" }
+		postbuildcommands { "postbuildcmd" }
+		files { "file.in" }
+		filter { "files:file.in" }
+			buildcommands { "buildcmd" }
+			buildoutputs { "file.out" }
+		prepare()
+		xcode.PBXAggregateTarget(tr)
+		test.capture [[
+/* Begin PBXAggregateTarget section */
+		[MyProject:target] /* MyProject */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = [MyProject:cfg] /* Build configuration list for PBXAggregateTarget "MyProject" */;
+			buildPhases = (
+				9607AE1010C857E500CD1376 /* Prebuild */,
+				[file.in:buildcommand] /* Build "file.in" */,
+				9607AE3510C85E7E00CD1376 /* Prelink */,
+				9607AE3710C85E8F00CD1376 /* Postbuild */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MyProject;
+			productName = MyProject;
+		};
+/* End PBXAggregateTarget section */
+		]]
+	end
+
+
 ---------------------------------------------------------------------------
 -- PBXProject tests
 ---------------------------------------------------------------------------
@@ -658,6 +915,50 @@
 /* Begin PBXProject section */
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "MyProject" */;
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 1;
+			mainGroup = [MyProject] /* MyProject */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				[MyProject:target] /* MyProject */,
+			);
+		};
+/* End PBXProject section */
+		]]
+	end
+
+
+	function suite.PBXProject_OnSystemCapabilities()
+		xcodesystemcapabilities {
+			["com.apple.InAppPurchase"] = "ON",
+			["com.apple.iCloud"] = "ON",
+			["com.apple.GameCenter.iOS"] = "OFF",
+		}
+		prepare()
+		xcode.PBXProject(tr)
+		test.capture [[
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				TargetAttributes = {
+					[MyProject:target] = {
+						SystemCapabilities = {
+							com.apple.GameCenter.iOS = {
+								enabled = 0;
+							};
+							com.apple.InAppPurchase = {
+								enabled = 1;
+							};
+							com.apple.iCloud = {
+								enabled = 1;
+							};
+						};
+					};
+				};
+			};
 			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "MyProject" */;
 			compatibilityVersion = "Xcode 3.2";
 			hasScannedForEncodings = 1;
@@ -744,6 +1045,38 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "ls src\ncp \"a\" \"b\"";
+		};
+/* End PBXShellScriptBuildPhase section */
+		]]
+	end
+
+
+	function suite.PBXShellScriptBuildPhase_OnBuildComandScripts()
+		files { "file.in1" }
+		filter { "files:file.in1" }
+			buildcommands { 'ls src', 'cp "a" "b"' }
+			buildinputs { "file.in2" }
+			buildoutputs { "file.out" }
+		prepare()
+		xcode.PBXShellScriptBuildPhase(tr)
+		test.capture [[
+/* Begin PBXShellScriptBuildPhase section */
+		[file.in1:buildcommand] /* Build "file.in1" */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"file.in1",
+				"file.in2",
+			);
+			name = "Build \"file.in1\"";
+			outputPaths = (
+				"file.out",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"${CONFIGURATION}\" = \"Debug\" ]; then\n\tls src\n\tcp \"a\" \"b\"\nfi\nif [ \"${CONFIGURATION}\" = \"Release\" ]; then\n\tls src\n\tcp \"a\" \"b\"\nfi";
 		};
 /* End PBXShellScriptBuildPhase section */
 		]]
@@ -940,6 +1273,50 @@
 	end
 
 
+	function suite.XCBuildConfigurationTarget_OnOSXBundle()
+		kind "SharedLib"
+		sharedlibtype "OSXBundle"
+		prepare()
+		xcode.XCBuildConfiguration_Target(tr, tr.products.children[1], tr.configs[1])
+		test.capture [[
+		[MyProject.bundle:Debug] /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = bin/Debug;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				PRODUCT_NAME = MyProject;
+			};
+			name = Debug;
+		};
+		]]
+	end
+
+
+	function suite.XCBuildConfigurationTarget_OnOSXFramework()
+		kind "SharedLib"
+		sharedlibtype "OSXFramework"
+		prepare()
+		xcode.XCBuildConfiguration_Target(tr, tr.products.children[1], tr.configs[1])
+		test.capture [[
+		[MyProject.framework:Debug] /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = bin/Debug;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				PRODUCT_NAME = MyProject;
+			};
+			name = Debug;
+		};
+		]]
+	end
+
+
 	function suite.XCBuildConfigurationTarget_OnTargetPrefix()
 		kind "SharedLib"
 		targetprefix "xyz"
@@ -963,7 +1340,51 @@
 	end
 
 
-	function suite.XCBuildConfigurationTarget_OnTargetExtension()
+	function suite.XCBuildConfigurationTarget_OnConsoleAppTargetExtension()
+		kind "ConsoleApp"
+		targetextension ".xyz"
+		prepare()
+		xcode.XCBuildConfiguration_Target(tr, tr.products.children[1], tr.configs[1])
+		test.capture [[
+		[MyProject.xyz:Debug] /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = bin/Debug;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = MyProject.xyz;
+			};
+			name = Debug;
+		};
+		]]
+	end
+
+
+	function suite.XCBuildConfigurationTarget_OnConsoleAppNoTargetExtension()
+		kind "ConsoleApp"
+		targetextension ""
+		prepare()
+		xcode.XCBuildConfiguration_Target(tr, tr.products.children[1], tr.configs[1])
+		test.capture [[
+		[MyProject:Debug] /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = bin/Debug;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = MyProject;
+			};
+			name = Debug;
+		};
+		]]
+	end
+
+
+	function suite.XCBuildConfigurationTarget_OnSharedLibTargetExtension()
 		kind "SharedLib"
 		targetextension ".xyz"
 		prepare()
@@ -980,6 +1401,218 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				INSTALL_PATH = /usr/local/lib;
 				PRODUCT_NAME = MyProject;
+			};
+			name = Debug;
+		};
+		]]
+	end
+
+
+	function suite.XCBuildConfigurationTarget_OnSharedLibNoTargetExtension()
+		kind "SharedLib"
+		targetextension ""
+		prepare()
+		xcode.XCBuildConfiguration_Target(tr, tr.products.children[1], tr.configs[1])
+		test.capture [[
+		[libMyProject:Debug] /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = bin/Debug;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				EXECUTABLE_EXTENSION = "";
+				EXECUTABLE_PREFIX = lib;
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = MyProject;
+			};
+			name = Debug;
+		};
+		]]
+	end
+
+
+	function suite.XCBuildConfigurationTarget_OnStaticLibTargetExtension()
+		kind "StaticLib"
+		targetextension ".xyz"
+		prepare()
+		xcode.XCBuildConfiguration_Target(tr, tr.products.children[1], tr.configs[1])
+		test.capture [[
+		[libMyProject.xyz:Debug] /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = bin/Debug;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				EXECUTABLE_EXTENSION = xyz;
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = MyProject;
+			};
+			name = Debug;
+		};
+		]]
+	end
+
+
+	function suite.XCBuildConfigurationTarget_OnStaticLibNoTargetExtension()
+		kind "StaticLib"
+		targetextension ""
+		prepare()
+		xcode.XCBuildConfiguration_Target(tr, tr.products.children[1], tr.configs[1])
+		test.capture [[
+		[libMyProject:Debug] /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = bin/Debug;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				EXECUTABLE_EXTENSION = "";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = MyProject;
+			};
+			name = Debug;
+		};
+		]]
+	end
+
+
+	function suite.XCBuildConfigurationTarget_OnWindowedAppTargetExtension()
+		kind "WindowedApp"
+		targetextension ".xyz"
+		prepare()
+		xcode.XCBuildConfiguration_Target(tr, tr.products.children[1], tr.configs[1])
+		test.capture [[
+		[MyProject.xyz:Debug] /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = bin/Debug;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = "\"$(HOME)/Applications\"";
+				PRODUCT_NAME = MyProject;
+				WRAPPER_EXTENSION = xyz;
+			};
+			name = Debug;
+		};
+		]]
+	end
+
+
+	function suite.XCBuildConfigurationTarget_OnWindowedAppNoTargetExtension()
+		kind "WindowedApp"
+		targetextension ""
+		prepare()
+		xcode.XCBuildConfiguration_Target(tr, tr.products.children[1], tr.configs[1])
+		test.capture [[
+		[MyProject:Debug] /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = bin/Debug;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = "\"$(HOME)/Applications\"";
+				PRODUCT_NAME = MyProject;
+				WRAPPER_EXTENSION = "";
+			};
+			name = Debug;
+		};
+		]]
+	end
+
+
+	function suite.XCBuildConfigurationTarget_OnOSXBundleTargetExtension()
+		kind "SharedLib"
+		sharedlibtype "OSXBundle"
+		targetextension ".xyz"
+		prepare()
+		xcode.XCBuildConfiguration_Target(tr, tr.products.children[1], tr.configs[1])
+		test.capture [[
+		[MyProject.xyz:Debug] /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = bin/Debug;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				PRODUCT_NAME = MyProject;
+				WRAPPER_EXTENSION = xyz;
+			};
+			name = Debug;
+		};
+		]]
+	end
+
+
+	function suite.XCBuildConfigurationTarget_OnOSXBundleNoTargetExtension()
+		kind "SharedLib"
+		sharedlibtype "OSXBundle"
+		targetextension ""
+		prepare()
+		xcode.XCBuildConfiguration_Target(tr, tr.products.children[1], tr.configs[1])
+		test.capture [[
+		[MyProject:Debug] /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = bin/Debug;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				PRODUCT_NAME = MyProject;
+				WRAPPER_EXTENSION = "";
+			};
+			name = Debug;
+		};
+		]]
+	end
+
+
+	function suite.XCBuildConfigurationTarget_OnOSXFrameworkTargetExtension()
+		kind "SharedLib"
+		sharedlibtype "OSXFramework"
+		targetextension ".xyz"
+		prepare()
+		xcode.XCBuildConfiguration_Target(tr, tr.products.children[1], tr.configs[1])
+		test.capture [[
+		[MyProject.xyz:Debug] /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = bin/Debug;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				PRODUCT_NAME = MyProject;
+				WRAPPER_EXTENSION = xyz;
+			};
+			name = Debug;
+		};
+		]]
+	end
+
+
+	function suite.XCBuildConfigurationTarget_OnOSXFrameworkNoTargetExtension()
+		kind "SharedLib"
+		sharedlibtype "OSXFramework"
+		targetextension ""
+		prepare()
+		xcode.XCBuildConfiguration_Target(tr, tr.products.children[1], tr.configs[1])
+		test.capture [[
+		[MyProject:Debug] /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = bin/Debug;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_DYNAMIC_NO_PIC = NO;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				PRODUCT_NAME = MyProject;
+				WRAPPER_EXTENSION = "";
 			};
 			name = Debug;
 		};
@@ -2367,7 +3000,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
-				CLANG_CXX_LANGUAGE_STANDARD = "c++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++11";
 				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
 				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -2590,6 +3223,32 @@
 		};
 		]]
 	end
+
+	function suite.XCBuildConfigurationProject_OnRemoveXcodebuildSettings()
+		xcodebuildsettings {
+			ARCHS = false
+		}
+		prepare()
+		xcode.XCBuildConfiguration_Project(tr, tr.configs[1])
+		test.capture [[
+		[MyProject:Debug(2)] /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				OBJROOT = obj/Debug;
+				ONLY_ACTIVE_ARCH = NO;
+				SYMROOT = bin/Debug;
+			};
+			name = Debug;
+		};
+		]]
+	end
+
 
 ---------------------------------------------------------------------------
 -- XCBuildConfigurationList tests

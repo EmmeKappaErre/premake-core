@@ -138,7 +138,7 @@
 	end
 
 	function m.globals(prj)
-	
+
 		-- Write out the project-level globals
 		m.propertyGroup(nil, "Globals")
 		p.callArray(m.elements.globals, prj)
@@ -146,7 +146,7 @@
 
 		-- Write out the configurable globals
 		for cfg in project.eachconfig(prj) do
-		
+
 			-- Find out whether we're going to actually write a property out
 			local captured = p.capture(	function()
 										p.push()
@@ -160,7 +160,7 @@
 				p.callArray(m.elements.globalsCondition, prj, cfg)
 				p.pop('</PropertyGroup>')
 			end
-			
+
 		end
 
 	end
@@ -225,13 +225,11 @@
 				m.linkIncremental,
 				m.ignoreImportLibrary,
 				m.outDir,
-				m.outputFile,
 				m.intDir,
 				m.targetName,
 				m.targetExt,
 				m.includePath,
 				m.libraryPath,
-				m.imageXexOutput,
 				m.generateManifest,
 				m.extensionsToDeleteOnClean,
 				m.executablePath,
@@ -255,6 +253,9 @@
 
 	m.elements.nmakeProperties = function(cfg)
 		return {
+			m.executablePath,
+			m.includePath,
+			m.libraryPath,
 			m.nmakeOutput,
 			m.nmakeBuildCommands,
 			m.nmakeRebuildCommands,
@@ -307,8 +308,6 @@
 				m.linker,
 				m.manifest,
 				m.buildEvents,
-				m.imageXex,
-				m.deploy,
 				m.ruleVars,
 				m.buildLog,
 			}
@@ -442,7 +441,7 @@
 	end
 
 	function m.resourceCompile(cfg)
-		if cfg.system ~= p.XBOX360 and p.config.hasFile(cfg, path.isresourcefile) then
+		if p.config.hasFile(cfg, path.isresourcefile) then
 			local contents = p.capture(function ()
 				p.push()
 				p.callArray(m.elements.resourceCompile, cfg)
@@ -609,6 +608,37 @@
 
 
 ---
+-- Transform property to string
+---
+
+	function m.getRulePropertyString(rule, prop, value, kind)
+		-- list of paths
+		if kind == "list:path" then
+			return table.concat(vstudio.path(cfg, value), ';')
+		end
+	
+		-- path
+		if kind == "path" then
+			return vstudio.path(cfg, value)
+		end
+
+		-- list
+		if type(value) == "table" then
+			return table.concat(value, ";")
+		end
+
+		-- enum
+		if prop.values then
+			value = table.findKeyByValue(prop.values, value)
+		end
+
+		-- primitive
+		return tostring(value)
+	end
+
+
+
+---
 -- Write out project-level custom rule variables.
 ---
 
@@ -622,13 +652,7 @@
 					local fld = p.rule.getPropertyField(rule, prop)
 					local value = cfg[fld.name]
 					if value ~= nil then
-						if fld.kind == "list:path" then
-							value = table.concat(vstudio.path(cfg, value), ';')
-						elseif fld.kind == "path" then
-							value = vstudio.path(cfg, value)
-						else
-							value = p.rule.getPropertyString(rule, prop, value)
-						end
+						value = m.getRulePropertyString(rule, prop, value, fld.kind)
 
 						if value ~= nil and #value > 0 then
 							m.element(prop.name, nil, '%s', value)
@@ -744,6 +768,7 @@
 						m.basicRuntimeChecks,
 						m.exceptionHandling,
 						m.compileAsManaged,
+						m.compileAs,
 						m.runtimeTypeInfo,
 						m.warningLevelFile,
 					}
@@ -762,13 +787,14 @@
 		end
 	}
 
+
 ---
--- ClCompile group
+-- FxCompile group
 ---
 	m.categories.FxCompile = {
 		name	   = "FxCompile",
 		extensions = { ".hlsl" },
-		priority   = 3,
+		priority   = 4,
 
 		emitFiles = function(prj, group)
 			local fileCfgFunc = function(fcfg, condition)
@@ -807,7 +833,7 @@
 ---
 	m.categories.None = {
 		name = "None",
-		priority = 4,
+		priority = 5,
 
 		emitFiles = function(prj, group)
 			m.emitFiles(prj, group, "None", {m.generatedFile})
@@ -825,7 +851,7 @@
 	m.categories.ResourceCompile = {
 		name       = "ResourceCompile",
 		extensions = ".rc",
-		priority   = 5,
+		priority   = 6,
 
 		emitFiles = function(prj, group)
 			local fileCfgFunc = {
@@ -848,7 +874,7 @@
 ---
 	m.categories.CustomBuild = {
 		name = "CustomBuild",
-		priority = 6,
+		priority = 7,
 
 		emitFiles = function(prj, group)
 			local fileFunc = {
@@ -881,7 +907,7 @@
 	m.categories.Midl = {
 		name       = "Midl",
 		extensions = ".idl",
-		priority   = 7,
+		priority   = 8,
 
 		emitFiles = function(prj, group)
 			local fileCfgFunc = {
@@ -905,7 +931,7 @@
 	m.categories.Masm = {
 		name       = "Masm",
 		extensions = ".asm",
-		priority   = 8,
+		priority   = 9,
 
 		emitFiles = function(prj, group)
 			local fileCfgFunc = function(fcfg, condition)
@@ -944,7 +970,7 @@
 	m.categories.Image = {
 		name       = "Image",
 		extensions = { ".gif", ".jpg", ".jpe", ".png", ".bmp", ".dib", "*.tif", "*.wmf", "*.ras", "*.eps", "*.pcx", "*.pcd", "*.tga", "*.dds" },
-		priority   = 9,
+		priority   = 10,
 
 		emitFiles = function(prj, group)
 			local fileCfgFunc = function(fcfg, condition)
@@ -967,7 +993,7 @@
 	m.categories.Natvis = {
 		name       = "Natvis",
 		extensions = { ".natvis" },
-		priority   = 10,
+		priority   = 11,
 
 		emitFiles = function(prj, group)
 			m.emitFiles(prj, group, "Natvis", {m.generatedFile})
@@ -1026,12 +1052,18 @@
 
 
 	function m.categorizeFile(prj, file)
-		-- If any configuration for this file uses a custom build step,
-		-- that's the category to use
 		for cfg in project.eachconfig(prj) do
 			local fcfg = fileconfig.getconfig(file, cfg)
-			if fileconfig.hasCustomBuildRule(fcfg) then
-				return m.categories.CustomBuild
+			if fcfg then
+				-- If any configuration for this file uses a custom build step, that's the category to use
+				if fileconfig.hasCustomBuildRule(fcfg) then
+					return m.categories.CustomBuild
+				end
+
+				-- also check for buildaction
+				if fcfg.buildaction then
+					return m.categories[fcfg.buildaction] or m.categories.None
+				end
 			end
 		end
 
@@ -1203,7 +1235,7 @@
 						for cfg in project.eachconfig(prj) do
 							local fcfg = fileconfig.getconfig(file, cfg)
 							if fcfg and fcfg[fld.name] then
-								local value = p.rule.getPropertyString(rule, prop, fcfg[fld.name])
+								local value = m.getRulePropertyString(rule, prop, fcfg[fld.name])
 								if value and #value > 0 then
 									m.element(prop.name, m.configPair(cfg), '%s', value)
 								end
@@ -1369,6 +1401,8 @@
 			if (cfg.cppdialect == "C++14") then
 				m.element("LanguageStandard", nil, 'stdcpp14')
 			elseif (cfg.cppdialect == "C++17") then
+				m.element("LanguageStandard", nil, 'stdcpp17')
+			elseif (cfg.cppdialect == "C++latest") then
 				m.element("LanguageStandard", nil, 'stdcpplatest')
 			end
 		end
@@ -1395,6 +1429,8 @@
 			if (cfg.cppdialect == "C++14") then
 				table.insert(opts, "/std:c++14")
 			elseif (cfg.cppdialect == "C++17") then
+				table.insert(opts, "/std:c++latest")
+			elseif (cfg.cppdialect == "C++latest") then
 				table.insert(opts, "/std:c++latest")
 			end
 		end
@@ -1540,11 +1576,11 @@
 	end
 
 
-	function m.compileAs(cfg)
+	function m.compileAs(cfg, condition)
 		if p.languages.isc(cfg.compileas) then
-			m.element("CompileAs", nil, "CompileAsC")
+			m.element("CompileAs", condition, "CompileAsC")
 		elseif p.languages.iscpp(cfg.compileas) then
-			m.element("CompileAs", nil, "CompileAsCpp")
+			m.element("CompileAs", condition, "CompileAsCpp")
 		end
 	end
 
@@ -1574,7 +1610,7 @@
 	function m.debugInformationFormat(cfg)
 		local value
 		local tool, toolVersion = p.config.toolset(cfg)
-		if (cfg.symbols == p.ON) or (cfg.symbols == "FastLink") then
+		if (cfg.symbols == p.ON) or (cfg.symbols == "FastLink") or (cfg.symbols == "Full") then
 			if cfg.debugformat == "c7" then
 				value = "OldStyle"
 			elseif (cfg.architecture == "x86_64" and _ACTION < "vs2015") or
@@ -1598,17 +1634,6 @@
 			end
 
 			m.element("DebugInformationFormat", nil, value)
-		end
-	end
-
-
-	function m.deploy(cfg)
-		if cfg.system == p.XBOX360 then
-			p.push('<Deploy>')
-			m.element("DeploymentType", nil, "CopyToHardDrive")
-			m.element("DvdEmulationType", nil, "ZeroSeekTimes")
-			m.element("DeploymentFiles", nil, "$(RemoteRoot)=$(ImagePath);")
-			p.pop('</Deploy>')
 		end
 	end
 
@@ -1833,29 +1858,6 @@
 	function m.ignoreImportLibrary(cfg)
 		if cfg.kind == p.SHAREDLIB and cfg.flags.NoImportLib then
 			m.element("IgnoreImportLibrary", nil, "true")
-		end
-	end
-
-
-	function m.imageXex(cfg)
-		if cfg.system == p.XBOX360 then
-			p.push('<ImageXex>')
-			if cfg.configfile then
-				m.element("ConfigurationFile", nil, "%s", cfg.configfile)
-			else
-				p.w('<ConfigurationFile>')
-				p.w('</ConfigurationFile>')
-			end
-			p.w('<AdditionalSections>')
-			p.w('</AdditionalSections>')
-			p.pop('</ImageXex>')
-		end
-	end
-
-
-	function m.imageXexOutput(cfg)
-		if cfg.system == p.XBOX360 then
-			m.element("ImageXexOutput", nil, "%s", "$(OutDir)$(TargetName).xex")
 		end
 	end
 
@@ -2153,11 +2155,13 @@
 
 
 	function m.windowsSDKDesktopARMSupport(cfg)
-		if cfg.architecture == p.ARM then
-			p.w('<WindowsSDKDesktopARMSupport>true</WindowsSDKDesktopARMSupport>')
-		end
-		if cfg.architecture == p.ARM64 then
-			p.w('<WindowsSDKDesktopARM64Support>true</WindowsSDKDesktopARM64Support>')
+		if cfg.system == p.WINDOWS then
+			if cfg.architecture == p.ARM then
+				p.w('<WindowsSDKDesktopARMSupport>true</WindowsSDKDesktopARMSupport>')
+			end
+			if cfg.architecture == p.ARM64 then
+				p.w('<WindowsSDKDesktopARM64Support>true</WindowsSDKDesktopARM64Support>')
+			end
 		end
 	end
 
@@ -2225,13 +2229,6 @@
 	function m.outDir(cfg)
 		local outdir = vstudio.path(cfg, cfg.buildtarget.directory)
 		m.element("OutDir", nil, "%s\\", outdir)
-	end
-
-
-	function m.outputFile(cfg)
-		if cfg.system == p.XBOX360 then
-			m.element("OutputFile", nil, "$(OutDir)%s", cfg.buildtarget.name)
-		end
 	end
 
 
@@ -2466,10 +2463,8 @@
 
 
 	function m.subSystem(cfg)
-		if cfg.system ~= p.XBOX360 then
-			local subsystem = iif(cfg.kind == p.CONSOLEAPP, "Console", "Windows")
-			m.element("SubSystem", nil, subsystem)
-		end
+		local subsystem = iif(cfg.kind == p.CONSOLEAPP, "Console", "Windows")
+		m.element("SubSystem", nil, subsystem)
 	end
 
 
@@ -2504,9 +2499,9 @@
 		m.element("TargetName", nil, "%s%s", cfg.buildtarget.prefix, cfg.buildtarget.basename)
 	end
 
-	
+
 	function m.targetPlatformVersion(cfgOrPrj)
-	
+
 		if _ACTION >= "vs2015" then
 			local min = project.systemversion(cfgOrPrj)
 			-- handle special "latest" version
@@ -2514,12 +2509,12 @@
 				-- vs2015 and lower can't build against SDK 10
 				min = iif(_ACTION >= "vs2017", m.latestSDK10Version(), nil)
 			end
-			
+
 			return min
 		end
-	
+
 	end
-	
+
 
 	function m.targetPlatformVersionGlobal(prj)
 		local min = m.targetPlatformVersion(prj)
@@ -2527,18 +2522,18 @@
 			m.element("WindowsTargetPlatformVersion", nil, min)
 		end
 	end
-	
+
 
 	function m.targetPlatformVersionCondition(prj, cfg)
-	
+
 		local cfgPlatformVersion = m.targetPlatformVersion(cfg)
 		local prjPlatformVersion = m.targetPlatformVersion(prj)
-		
+
 		if cfgPlatformVersion ~= nil and cfgPlatformVersion ~= prjPlatformVersion then
 		    m.element("WindowsTargetPlatformVersion", nil, cfgPlatformVersion)
 		end
 	end
-	
+
 
 	function m.preferredToolArchitecture(prj)
 		if _ACTION >= "vs2013" then
@@ -2640,6 +2635,9 @@
 		p.xmlUtf8()
 	end
 
+	-- Fx Functions
+	--------------------------------------------------------------------------------------------------------------
+	--------------------------------------------------------------------------------------------------------------
 
 	function m.fxCompilePreprocessorDefinition(cfg, condition)
 		if cfg.shaderdefines and #cfg.shaderdefines > 0 then

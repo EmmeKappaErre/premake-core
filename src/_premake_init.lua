@@ -58,17 +58,6 @@
 		name = "buildaction",
 		scope = "config",
 		kind = "string",
-		allowed = {
-			"Application",
-			"Compile",
-			"Component",
-			"Copy",
-			"Embed",
-			"Form",
-			"None",
-			"Resource",
-			"UserControl",
-		},
 	}
 
 	api.register {
@@ -200,13 +189,6 @@
 		name = "configmap",
 		scope = "project",
 		kind = "list:keyed:array:string",
-	}
-
-	api.register {
-		name = "configfile",
-		scope = "config",
-		kind = "string",
-		tokens = true,
 	}
 
 	api.register {
@@ -364,13 +346,6 @@
 
 	api.register {
 		name = "dependson",
-		scope = "config",
-		kind = "list:string",
-		tokens = true,
-	}
-
-	api.register {
-		name = "deploymentoptions",
 		scope = "config",
 		kind = "list:string",
 		tokens = true,
@@ -616,6 +591,12 @@
 	}
 
 	api.register {
+		name = "csversion",
+		scope = "config",
+		kind = "string",
+	}
+
+	api.register {
 		name = "gccprefix",
 		scope = "config",
 		kind = "string",
@@ -765,6 +746,7 @@
 		kind = "string",
 		allowed = {
 			"Default",
+			"C++latest",
 			"C++98",
 			"C++0x",
 			"C++11",
@@ -1143,7 +1125,6 @@
 			"solaris",
 			"wii",
 			"windows",
-			"xbox360",
 		},
 	}
 
@@ -1378,6 +1359,16 @@
 		}
 	}
 
+	api.register {
+		name = "inlinesvisibility",
+		scope = "config",
+		kind = "string",
+		allowed = {
+			"Default",
+			"Hidden"
+		}
+	}
+
 -----------------------------------------------------------------------------
 --
 -- Field name aliases for backward compatibility
@@ -1389,7 +1380,6 @@
 	api.alias("buildmessage", "buildMessage")
 	api.alias("buildoutputs", "buildOutputs")
 	api.alias("cleanextensions", "cleanExtensions")
-	api.alias("configfile", "configFile")
 	api.alias("dotnetframework", "framework")
 	api.alias("editandcontinue", "editAndContinue")
 	api.alias("fileextension", "fileExtension")
@@ -1637,6 +1627,7 @@
 
 	newoption
 	{
+		category	= "compilers",
 		trigger     = "cc",
 		value       = "VALUE",
 		description = "Choose a C/C++ compiler set",
@@ -1648,6 +1639,7 @@
 
 	newoption
 	{
+		category	= "compilers",
 		trigger     = "dotnet",
 		value       = "VALUE",
 		description = "Choose a .NET compiler set",
@@ -1705,6 +1697,7 @@
 			{ "bsd",      "OpenBSD, NetBSD, or FreeBSD" },
 			{ "haiku",    "Haiku" },
 			{ "hurd",     "GNU/Hurd" },
+			{ "ios",      "iOS" },
 			{ "linux",    "Linux" },
 			{ "macosx",   "Apple Mac OS X" },
 			{ "solaris",  "Solaris" },
@@ -1771,26 +1764,31 @@
 
 	-- Add variations for other Posix-like systems.
 
-	filter { "system:MacOSX", "kind:WindowedApp" }
+	filter { "system:darwin", "kind:WindowedApp" }
 		targetextension ".app"
 
-	filter { "system:MacOSX", "kind:SharedLib" }
+	filter { "system:darwin", "kind:SharedLib" }
 		targetextension ".dylib"
+
+	filter { "system:darwin", "kind:SharedLib", "sharedlibtype:OSXBundle" }
+		targetprefix ""
+		targetextension ".bundle"
+
+	filter { "system:darwin", "kind:SharedLib", "sharedlibtype:OSXFramework" }
+		targetprefix ""
+		targetextension ".framework"
 
 	-- Windows and friends.
 
 	filter { "system:Windows or language:C# or language:F#", "kind:ConsoleApp or WindowedApp" }
 		targetextension ".exe"
 
-	filter { "system:Xbox360", "kind:ConsoleApp or WindowedApp" }
-		targetextension ".exe"
-
-	filter { "system:Windows or Xbox360", "kind:SharedLib" }
+	filter { "system:Windows", "kind:SharedLib" }
 		targetprefix ""
 		targetextension ".dll"
 		implibextension ".lib"
 
-	filter { "system:Windows or Xbox360", "kind:StaticLib" }
+	filter { "system:Windows", "kind:StaticLib" }
 		targetprefix ""
 		targetextension ".lib"
 
@@ -1802,7 +1800,7 @@
 	filter { "kind:SharedLib", "system:not Windows" }
 		pic "On"
 
-	filter { "system:macosx" }
+	filter { "system:darwin" }
 		toolset "clang"
 
 	filter {}

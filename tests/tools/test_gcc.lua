@@ -77,7 +77,7 @@
 	function suite.cflags_onExtraWarnings()
 		warnings "extra"
 		prepare()
-		test.contains({ "-Wall -Wextra" }, gcc.getcflags(cfg))
+		test.contains({ "-Wall", "-Wextra" }, gcc.getcflags(cfg))
 	end
 
 	function suite.cflags_onHighWarnings()
@@ -866,4 +866,22 @@
 		prepare()
 		test.excludes({ "-fvisibility=protected" }, gcc.getcflags(cfg))
 		test.contains({ "-fvisibility=protected" }, gcc.getcxxflags(cfg))
+	end
+
+--
+-- Test inlines visibility flags.
+--
+
+	function suite.cxxflags_onInlinesVisibilityDefault()
+		inlinesvisibility "Default"
+		prepare()
+		test.excludes({ "-fvisibility-inlines-hidden" }, gcc.getcflags(cfg))
+		test.excludes({ "-fvisibility-inlines-hidden" }, gcc.getcxxflags(cfg))
+	end
+
+	function suite.cxxflags_onInlinesVisibilityHidden()
+		inlinesvisibility "Hidden"
+		prepare()
+		test.excludes({ "-fvisibility-inlines-hidden" }, gcc.getcflags(cfg))
+		test.contains({ "-fvisibility-inlines-hidden" }, gcc.getcxxflags(cfg))
 	end
